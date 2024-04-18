@@ -12,13 +12,11 @@ import (
     "os"
 )
 
-var token string
-var canvas_api string = "https://canvas.instructure.com/api/v1/"
 
 func main() {
     fmt.Println("hello world")
-    token = os.Args[1]
-    fmt.Println(token)
+    token := os.Args[1]
+    canvas := NewCanvasApi(token)
 
     client := http.Client {
         Timeout: 30 * time.Second,
@@ -37,7 +35,7 @@ func main() {
 }
 
 func auth(client http.Client) *io.ReadCloser {
-    url := fmt.Sprintf("%scourses", canvas_api)
+    url := fmt.Sprintf("%scourses", BASE)
     reader := bytes.NewReader([]byte(""))
     req, err := http.NewRequest(http.MethodGet, url, reader)
     if err != nil {
