@@ -6,6 +6,8 @@ import (
     "net/http"
     "bytes"
     "io"
+    "io/ioutil"
+    "encoding/json"
 )
 
 
@@ -35,51 +37,58 @@ func (api *CanvasApi) get(url string) (*http.Request, error) {
     return req, nil
 }
 
-func (api *CanvasApi) Courses() *io.ReadCloser {
-    url := newUrlBuilder().
-        Courses().
-        String()
-    req, err := api.get(url)
-    if err != nil {
-        fmt.Println(err)
-        return nil
-    }
-
+func (api *CanvasApi) send(req http.Request) ([]byte, error) {
     res, err := api.Client.Do(req)
     if err != nil {
-        fmt.Println(err)
-        return nil
+        return nil, err
     }
 
-    return &res.Body
+    bytes, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        return nil, err
+    }
+
+    return bytes, nil
 }
 
+func (api *CanvasApi) Courses(courses *[]Course) error {
+    url := fmt.Sprintf("%s/courses", BASE)
+    req, err := api.get(url)
+    if err != nil {
+        return err
+    }
 
-type urlBuilder struct {
-    url []byte
-}
+    bytes, err  := api.send(req)
+    if err != nil {
+        return err
+    }
 
-func newUrlBuilder() *urlBuilder {
-    return &urlBuilder {
-        url: []byte(BASE),
+    err = json.Unmarshal(bytes, courses)
+    if err != nil {
+        return err
     }
 }
 
-func (b *urlBuilder) Courses() *urlBuilder {
-    b.url = append(b.url, []byte("courses/")...)
-    return b
-}
+func (api *CanvasApi) GradeChanges(gradeChanges *[]GradeEvent, studentId int, startTime *string) error {
+    url := fmt.Sprintf("%s/audit/grade_chage/students/%d", BASE, studentId)
+    if startTime != nil {
+        url = fmt.Sprintf("%s?start_time=%s", url, *startTime)
+    }
+    
+    req, err := api.Get(url)
+    if err != nil {
+        return err
+    }
 
-func (b *urlBuilder) Course(id string) *urlBuilder {
-    b.url = append(b.url, []byte(fmt.Sprintf("%s/", id))...)
-    return b
-}
+    bytes, err := api.send(req)
+    if err != nil {
+        return err
+    }
 
-
-
-
-func (b *urlBuilder) String() string {
-    return string(b.url)
+    err = json.Unmarshal(bytes, gradeChanges)
+    if err != nil {
+        return err
+    }
 }
 
 

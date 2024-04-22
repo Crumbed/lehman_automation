@@ -5,7 +5,22 @@ package main
 
 
 type Course struct {
-    Id      int   `json:"id"`
+    Id          int             `json:"id"`
+    Enrollments []Enrollment    `json:"enrollments"`
+}
+
+type Enrollment struct {
+    AccountId   string  `json:"sis_account_id"`
+    UserId      string  `json:"sis_user_id"`
+    Type        string  `json:"type"`
+    User        User    `json:"user"`
+}
+
+type User struct {
+    Id          int     `json:"id"`
+    Name        string  `json:"name"`
+    SortName    string  `json:"sortable_name"`
+    SisId       string  `json:"sis_user_id"`
 }
 
 type GradeLinks struct {

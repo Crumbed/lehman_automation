@@ -20,25 +20,47 @@ func main() {
     }
     canvas := NewCanvasApi(token, client)
 
-    res := canvas.Courses()
-    if res == nil {
-        return
-    }
+    for true {
+        students, err := getStudents(canvas)
+        if err != nil {
+            fmt.Println(err)
+            continue
+        }
 
-    byteBody, err := ioutil.ReadAll(*res)
-    if err != nil {
-        fmt.Println(err)
-        return
-    }
+        for _, student := range students {
+            var gradeChanges []GradeEvent
+            err := canvas.GradeChanges(&gradeChanges, student.Id, nil)
+            if err != nil {
+                fmt.Println(err)
+                continue
+            }
 
-    fmt.Println(string(byteBody))
+        }
+    }
 }
 
 
 
 
-func getFailingStudents(api *CanvasApi) {
-    
+func getStudents(api *CanvasApi) (map[string]User, error) {
+    var courses []Course
+    err := api.Courses(&courses)
+    if err != nil {
+        return nil, err
+    }
+
+    students := make(map[string]User)
+    for _, course := range courses {
+        for _, enrollment := range course.Enrollments {
+            if enrollment.Type != "StudentEnrollment" {
+                continue
+            }
+
+            students[enrollment.User.SisId] = enrollment.User
+        }
+    }
+
+    return students, nil
 }
 
 
