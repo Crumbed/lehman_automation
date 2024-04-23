@@ -9,7 +9,14 @@ import (
     "io/ioutil"
     "os"
     "time"
+    "strconv"
 )
+
+
+type Record struct {
+    Student     string
+    Assignment  string
+}
 
 
 func main() {
@@ -20,26 +27,44 @@ func main() {
     }
     canvas := NewCanvasApi(token, client)
 
-    for true {
-        students, err := getStudents(canvas)
+    students, err := getStudents(canvas)
+    if err != nil {
+        fmt.Println(err)
+        continue
+    }
+
+    records := getRecords(canvas, &students)
+}
+
+
+func getRecords(api *CanvasApi, students *map[string]User) []Record {
+    records := make([]Record, 0)
+    for _, s := range students {
+        var gradeChanges []GradeEvent
+        err := api.GradeChanges(&gradeChanges, s.Id, nil)
         if err != nil {
             fmt.Println(err)
             continue
         }
 
-        for _, student := range students {
-            var gradeChanges []GradeEvent
-            err := canvas.GradeChanges(&gradeChanges, student.Id, nil)
-            if err != nil {
-                fmt.Println(err)
-                continue
-            }
+        for _, gradeChange := range gradeChanges {
+            grade := strconv.Atoi(gradeChange.GradeAfter)
+            if grade >= 60 { continue }
+            var ass Assignment
+            canvas.Assignment(
+                &ass,
+                gradeChange.Links.Course,
+                gradeChange.Links.Assignment)
 
+            records = append(records, Record{
+                Student: s.SisId,
+                Assignment: ass.Name,
+            })
         }
     }
+
+    return records
 }
-
-
 
 
 func getStudents(api *CanvasApi) (map[string]User, error) {

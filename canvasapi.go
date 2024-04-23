@@ -75,7 +75,7 @@ func (api *CanvasApi) GradeChanges(gradeChanges *[]GradeEvent, studentId int, st
         url = fmt.Sprintf("%s?start_time=%s", url, *startTime)
     }
     
-    req, err := api.Get(url)
+    req, err := api.get(url)
     if err != nil {
         return err
     }
@@ -86,6 +86,24 @@ func (api *CanvasApi) GradeChanges(gradeChanges *[]GradeEvent, studentId int, st
     }
 
     err = json.Unmarshal(bytes, gradeChanges)
+    if err != nil {
+        return err
+    }
+}
+
+func (api *CanvasApi) Assignment(assignment *Assignment, courseId int, assignmentId int) error {
+    url := fmt.Sprintf("%s/courses/%d/assignments/%d", BASE, courseId, assignmentId)
+    req, err := api.get(url)
+    if err != nil {
+        return err
+    }
+
+    bytes, err := api.send(req)
+    if err != nil {
+        return err
+    }
+
+    err = json.Unmarshal(bytes, assignment)
     if err != nil {
         return err
     }

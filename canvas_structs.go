@@ -38,6 +38,11 @@ type GradeEvent struct {
     Links       GradeLinks  `json:"links"`
 }
 
+type Assignment struct {
+    Id          int     `json:"id"`
+    Name        string  `json:"name"`
+}
+
 
 
 
