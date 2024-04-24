@@ -1,3 +1,5 @@
+package main
+
 import (
     "context"
     "encoding/json"
@@ -11,6 +13,16 @@ import (
     "google.golang.org/api/option"
     "google.golang.org/api/sheets/v4"
 )
+
+
+type SynStudent struct {
+    Classname   string
+    SectionId   string
+    Name        string
+    Email       string
+    ParentName  string
+    PEmails     [3]string
+}
 
 // Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
@@ -67,7 +79,7 @@ func saveToken(path string, token *oauth2.Token) {
     json.NewEncoder(f).Encode(token)
 }
 
-func googleSheets() *Service {
+func googleSheets() *sheets.Service {
     ctx := context.Background()
     b, err := os.ReadFile("client_secret.json")
     if err != nil {
@@ -85,6 +97,8 @@ func googleSheets() *Service {
     if err != nil {
         log.Fatalf("Unable to retrieve Sheets client: %v", err)
     }
+
+    return srv
 
     /*
     // Prints the names and majors of students in a sample spreadsheet:
@@ -108,7 +122,43 @@ func googleSheets() *Service {
     */
 }
 
+const A int = 0
+const B int = 1
+const C int = 2
+const D int = 3
+const E int = 4
+const F int = 5
+const G int = 6
+const H int = 7
 
+func getStudentInfo(srv *sheets.Service, sheetId: string) *map[string]SynStudent {
+    readRange := "Sheet1!A:H"
+    resp, err := srv.Spreadsheets.Values.Get(sheetId, readRange).Do()
+    if err != nil {
+        log.Fatalf("Unable to retrieve data from sheet: %v", err)
+    }
+
+    students := make(map[string]SynStudent)
+    if len(resp.Values) == 0 {
+        fmt.Println("No data found.")
+    } else {
+        fmt.Println("Name, Major:")
+        for _, row := range resp.Values {
+            student := SynStudent{
+                Classname: row[A].(string),
+                SectionId: row[B].(string),
+                Name: row[C].(string),
+                Email: row[D].(string),
+                ParentName: row[E].(string),
+                PEmails: [3]string{row[F].(string), row[G].(string), row[H].(string)},
+            }
+
+            students[student.Name] = student
+        }
+    }
+
+    return &students
+}
 
 
 

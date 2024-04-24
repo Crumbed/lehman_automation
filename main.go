@@ -4,9 +4,9 @@ package main;
 
 
 import (
+    "log"
     "fmt"
     "net/http"
-    "io/ioutil"
     "os"
     "time"
     "strconv"
@@ -29,17 +29,23 @@ func main() {
 
     students, err := getStudents(canvas)
     if err != nil {
-        fmt.Println(err)
-        continue
+        log.Fatalf("Unable to retrieve students: %v", err)
     }
 
     records := getRecords(canvas, &students)
+    _ = records
+
+    srv := googleSheets()
+    infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+    synStudents := getStudentInfo(srv, infoId)
+
+
 }
 
 
 func getRecords(api *CanvasApi, students *map[string]User) []Record {
     records := make([]Record, 0)
-    for _, s := range students {
+    for _, s := range *students {
         var gradeChanges []GradeEvent
         err := api.GradeChanges(&gradeChanges, s.Id, nil)
         if err != nil {
@@ -48,10 +54,13 @@ func getRecords(api *CanvasApi, students *map[string]User) []Record {
         }
 
         for _, gradeChange := range gradeChanges {
-            grade := strconv.Atoi(gradeChange.GradeAfter)
+            grade, err := strconv.Atoi(gradeChange.GradeAfter)
+            if err != nil {
+                log.Fatalf("Unable to convert grade to int: %v", err)
+            }
             if grade >= 60 { continue }
             var ass Assignment
-            canvas.Assignment(
+            api.Assignment(
                 &ass,
                 gradeChange.Links.Course,
                 gradeChange.Links.Assignment)

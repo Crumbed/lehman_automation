@@ -5,7 +5,6 @@ import (
     "fmt"
     "net/http"
     "bytes"
-    "io"
     "io/ioutil"
     "encoding/json"
 )
@@ -37,7 +36,7 @@ func (api *CanvasApi) get(url string) (*http.Request, error) {
     return req, nil
 }
 
-func (api *CanvasApi) send(req http.Request) ([]byte, error) {
+func (api *CanvasApi) send(req *http.Request) ([]byte, error) {
     res, err := api.Client.Do(req)
     if err != nil {
         return nil, err
@@ -67,6 +66,7 @@ func (api *CanvasApi) Courses(courses *[]Course) error {
     if err != nil {
         return err
     }
+    return nil
 }
 
 func (api *CanvasApi) GradeChanges(gradeChanges *[]GradeEvent, studentId int, startTime *string) error {
@@ -89,6 +89,8 @@ func (api *CanvasApi) GradeChanges(gradeChanges *[]GradeEvent, studentId int, st
     if err != nil {
         return err
     }
+
+    return nil
 }
 
 func (api *CanvasApi) Assignment(assignment *Assignment, courseId int, assignmentId int) error {
@@ -107,6 +109,8 @@ func (api *CanvasApi) Assignment(assignment *Assignment, courseId int, assignmen
     if err != nil {
         return err
     }
+    
+    return nil
 }
 
 
