@@ -39,7 +39,7 @@ func main() {
     infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
     synStudents := getStudentInfo(srv, infoId)
 
-
+    
 }
 
 

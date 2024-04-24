@@ -131,7 +131,7 @@ const F int = 5
 const G int = 6
 const H int = 7
 
-func getStudentInfo(srv *sheets.Service, sheetId: string) *map[string]SynStudent {
+func getStudentInfo(srv *sheets.Service, sheetId string) *map[string]SynStudent {
     readRange := "Sheet1!A:H"
     resp, err := srv.Spreadsheets.Values.Get(sheetId, readRange).Do()
     if err != nil {
