@@ -1,14 +1,15 @@
 package main
 
 import (
-    "context"
-    "fmt"
-    "log"
-    "os"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
-    "golang.org/x/oauth2/google"
-    "google.golang.org/api/option"
-    "google.golang.org/api/sheets/v4"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 
@@ -30,7 +31,7 @@ func googleSheets() *sheets.Service {
     }
 
     // If modifying these scopes, delete your previously saved token.json.
-    config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+    config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets")
     if err != nil {
         log.Fatalf("Unable to parse client secret file to config: %v", err)
     }
@@ -97,7 +98,7 @@ func getStudentInfo(srv *sheets.Service, sheetId string) *map[string]SynStudent 
                 
                 pemails[i-F] = emailPtr
             }
-            student := SynStudent{
+            student := SynStudent {
                 Classname: row[A].(string),
                 SectionId: row[B].(string),
                 Name: row[C].(string),
@@ -113,7 +114,22 @@ func getStudentInfo(srv *sheets.Service, sheetId string) *map[string]SynStudent 
     return &students
 }
 
+func updateContactLog(
+    srv *sheets.Service,
+    record *Record,
+    parentName string,
+    parentEmail string,
+) {
+    id := os.Getenv("CONTACT_LOG_ID")
+    values := [][]interface{} {
+        { record.Student, record.Assignment, parentName, parentEmail, time.Now().UTC().Format("MM/DD/YYYY") },
+    }
 
+    srv.Spreadsheets.Values.Append(id, "Sheet1", &sheets.ValueRange {
+        MajorDimension: "ROWS",
+        Values: values,
+    }).Do()
+}
 
 
 

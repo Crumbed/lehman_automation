@@ -69,19 +69,19 @@ func SendEmail(srv *gmail.Service, student SynStudent) {
     }
     myprofile, err := srv.Users.GetProfile("me").Do()
     if err != nil {
-        log.Fatal("Error while getting user data: %v", err)
+        log.Fatalf("Error while getting user data: %v", err)
     }
     myemail := myprofile.EmailAddress
     msgpath := os.Getenv("AUTO_MSG")
     policypath := os.Getenv("POLICY")
     msgfile, err := os.Open(msgpath)
     if err != nil {
-        log.Fatal("Error while opening message file: %v", err)
+        log.Fatalf("Error while opening message file: %v", err)
     }
     defer msgfile.Close()
     msgbody, err := io.ReadAll(msgfile)
     if err != nil {
-        log.Fatal("Error while reading message file: %v", err)
+        log.Fatalf("Error while reading message file: %v", err)
     }
 
     var draft gmail.Draft
@@ -94,18 +94,18 @@ func SendEmail(srv *gmail.Service, student SynStudent) {
 
     buffer := new(bytes.Buffer)
     if _, err := msg.WriteTo(buffer); err != nil {
-        log.Fatal("Error while writing message to email buffer: %v", err)
+        log.Fatalf("Error while writing message to email buffer: %v", err)
     }
     var m gmail.Message
     m.Raw = base64.URLEncoding.EncodeToString(buffer.Bytes())
     draft.Message = &m
     res, err := srv.Users.Drafts.Create("me", &draft).Do()
     if err != nil {
-        log.Fatal("Failed to create draft: %v", err)
+        log.Fatalf("Failed to create draft: %v", err)
     }
 
     if _, err = srv.Users.Drafts.Send("me", res).Do(); err != nil {
-        log.Fatal("Failed to send draft: %v", err) 
+        log.Fatalf("Failed to send draft: %v", err) 
     }
 }
 

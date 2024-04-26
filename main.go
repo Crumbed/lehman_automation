@@ -26,34 +26,37 @@ func main() {
         Timeout: 30 * time.Second,
     }
     canvas := NewCanvasApi(token, client)
-
-    students, err := getStudents(canvas)
-    if err != nil {
-        log.Fatalf("Unable to retrieve students: %v", err)
-    }
-
-    records := getRecords(canvas, &students)
-    _ = records
-
     sheetssrv := googleSheets()
-    infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-    synStudents := getStudentInfo(sheetssrv, infoId)
-
     gmailsrv := getGmail()
-    for _, record := range records {
-        synstudent, ok := (*synStudents)[record.Student]
-        if !ok {
-            fmt.Printf("Student %s not found\n", record.Student)
-            continue
+
+    for {
+        students, err := getStudents(canvas)
+        if err != nil {
+            log.Fatalf("Unable to retrieve students: %v", err)
         }
-    
-        SendEmail(gmailsrv, synstudent)
+
+        records := getRecords(canvas, &students)
+        _ = records
+
+        infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+        synStudents := getStudentInfo(sheetssrv, infoId)
+
+
+        for _, record := range records {
+            synstudent, ok := (*synStudents)[record.Student]
+            if !ok {
+                fmt.Printf("Student %s not found\n", record.Student)
+                continue
+            }
+
+            SendEmail(gmailsrv, synstudent)
+        }
     }
 }
 
 
 func getRecords(api *CanvasApi, students *map[string]User) []Record {
-    records := make([]Record, 0)
+    records := make([]Record, 0, 10)
     for _, s := range *students {
         var gradeChanges []GradeEvent
         err := api.GradeChanges(&gradeChanges, s.Id, nil)
