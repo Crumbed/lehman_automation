@@ -35,11 +35,20 @@ func main() {
     records := getRecords(canvas, &students)
     _ = records
 
-    srv := googleSheets()
+    sheetssrv := googleSheets()
     infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-    synStudents := getStudentInfo(srv, infoId)
+    synStudents := getStudentInfo(sheetssrv, infoId)
 
+    gmailsrv := getGmail()
+    for _, record := range records {
+        synstudent, ok := (*synStudents)[record.Student]
+        if !ok {
+            fmt.Printf("Student %s not found\n", record.Student)
+            continue
+        }
     
+        SendEmail(gmailsrv, synstudent)
+    }
 }
 
 
@@ -66,7 +75,7 @@ func getRecords(api *CanvasApi, students *map[string]User) []Record {
                 gradeChange.Links.Assignment)
 
             records = append(records, Record{
-                Student: s.SisId,
+                Student: s.Name,
                 Assignment: ass.Name,
             })
         }
@@ -90,7 +99,7 @@ func getStudents(api *CanvasApi) (map[string]User, error) {
                 continue
             }
 
-            students[enrollment.User.SisId] = enrollment.User
+            students[enrollment.User.Name] = enrollment.User
         }
     }
 
