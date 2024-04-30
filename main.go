@@ -29,28 +29,26 @@ func main() {
     sheetssrv := googleSheets()
     gmailsrv := getGmail()
 
-    for {
-        students, err := getStudents(canvas)
-        if err != nil {
-            log.Fatalf("Unable to retrieve students: %v", err)
+    students, err := getStudents(canvas)
+    if err != nil {
+        log.Fatalf("Unable to retrieve students: %v", err)
+    }
+
+    records := getRecords(canvas, &students)
+    _ = records
+
+    infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+    synStudents := getStudentInfo(sheetssrv, infoId)
+
+
+    for _, record := range records {
+        synstudent, ok := (*synStudents)[record.Student]
+        if !ok {
+            fmt.Printf("Student %s not found\n", record.Student)
+            continue
         }
 
-        records := getRecords(canvas, &students)
-        _ = records
-
-        infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-        synStudents := getStudentInfo(sheetssrv, infoId)
-
-
-        for _, record := range records {
-            synstudent, ok := (*synStudents)[record.Student]
-            if !ok {
-                fmt.Printf("Student %s not found\n", record.Student)
-                continue
-            }
-
-            SendEmail(gmailsrv, synstudent)
-        }
+        SendEmail(gmailsrv, synstudent)
     }
 }
 
