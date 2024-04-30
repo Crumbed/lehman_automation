@@ -72,8 +72,8 @@ func SendEmail(srv *gmail.Service, student SynStudent) {
         log.Fatalf("Error while getting user data: %v", err)
     }
     myemail := myprofile.EmailAddress
-    msgpath := os.Getenv("AUTO_MSG")
-    policypath := os.Getenv("POLICY")
+    msgpath := os.Getenv("AUTO_MSG_PATH")
+    policypath := os.Getenv("POLICY_PATH")
     msgfile, err := os.Open(msgpath)
     if err != nil {
         log.Fatalf("Error while opening message file: %v", err)

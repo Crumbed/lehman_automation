@@ -21,13 +21,14 @@ type Record struct {
 
 func main() {
     fmt.Println("hello world")
-    token := os.Args[1]
+    token := os.Getenv("CANVAS_API_KEY")
     client := http.Client {
         Timeout: 30 * time.Second,
     }
     canvas := NewCanvasApi(token, client)
     sheetssrv := googleSheets()
     gmailsrv := getGmail()
+    _ = gmailsrv
 
     students, err := getStudents(canvas)
     if err != nil {
@@ -37,7 +38,7 @@ func main() {
     records := getRecords(canvas, &students)
     _ = records
 
-    infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+    infoId := os.Getenv("SYN_INFO_ID")
     synStudents := getStudentInfo(sheetssrv, infoId)
 
     for _, record := range records {
@@ -47,7 +48,8 @@ func main() {
             continue
         }
 
-        SendEmail(gmailsrv, synstudent)
+        fmt.Printf("Student: %s\n", synstudent.Name)
+        // SendEmail(gmailsrv, synstudent)
     }
 }
 
