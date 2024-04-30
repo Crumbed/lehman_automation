@@ -20,6 +20,7 @@ type User struct {
     Id          int     `json:"id"`
     Name        string  `json:"name"`
     SortName    string  `json:"sortable_name"`
+    Email       string  `json:"email"`
     SisId       string  `json:"sis_user_id"`
 }
 

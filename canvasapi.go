@@ -1,12 +1,11 @@
 package main
 
-
 import (
-    "fmt"
-    "net/http"
-    "bytes"
-    "io/ioutil"
-    "encoding/json"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 )
 
 
@@ -42,7 +41,7 @@ func (api *CanvasApi) send(req *http.Request) ([]byte, error) {
         return nil, err
     }
 
-    bytes, err := ioutil.ReadAll(res.Body)
+    bytes, err := io.ReadAll(res.Body)
     if err != nil {
         return nil, err
     }
@@ -63,6 +62,25 @@ func (api *CanvasApi) Courses(courses *[]Course) error {
     }
 
     err = json.Unmarshal(bytes, courses)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func (api *CanvasApi) Users(users *[]User, id int) error {
+    url := fmt.Sprintf("%s/courses/%d/users", BASE, id)
+    req, err := api.get(url)
+    if err != nil {
+        return err
+    }
+
+    bytes, err  := api.send(req)
+    if err != nil {
+        return err
+    }
+
+    err = json.Unmarshal(bytes, users)
     if err != nil {
         return err
     }

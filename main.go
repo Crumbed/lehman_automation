@@ -40,7 +40,6 @@ func main() {
     infoId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
     synStudents := getStudentInfo(sheetssrv, infoId)
 
-
     for _, record := range records {
         synstudent, ok := (*synStudents)[record.Student]
         if !ok {
@@ -95,12 +94,17 @@ func getStudents(api *CanvasApi) (map[string]User, error) {
 
     students := make(map[string]User)
     for _, course := range courses {
-        for _, enrollment := range course.Enrollments {
-            if enrollment.Type != "StudentEnrollment" {
-                continue
-            }
-
-            students[enrollment.User.Name] = enrollment.User
+        id := course.Id
+        users := make([]User, 0, 10)
+        err := api.Users(&users, id)
+        if err != nil {
+            return nil, err
+        }
+        
+        for _, u := range users {
+            emailstart := u.Email[0];
+            if emailstart < '0' || emailstart > '9' { continue }
+            students[u.Name] = u
         }
     }
 
